@@ -1,0 +1,50 @@
+[
+    {
+        "_id": "661f98936fb9cbee37181886",
+        "ip": "103.87.149.19",
+        "anonymityLevel": "elite",
+        "asn": "AS7552",
+        "city": "Hanoi",
+        "country": "VN",
+        "created_at": "2024-04-17T09:38:27.277Z",
+        "google": false,
+        "isp": "Viettel Corporation",
+        "lastChecked": 1726283305,
+        "latency": 298.788,
+        "org": "Viettel Group",
+        "port": "80",
+        "protocols": [
+            "http"
+        ],
+        "speed": 1,
+        "upTime": 73.81615598885793,
+        "upTimeSuccessCount": 795,
+        "upTimeTryCount": 1077,
+        "updated_at": "2024-09-14T03:08:25.991Z",
+        "responseTime": 355
+    },
+    {
+        "_id": "661f98936fb9cbee37181886",
+        "ip": "43.134.1.40",
+        "anonymityLevel": "elite",
+        "asn": "AS7552",
+        "city": "Hanoi",
+        "country": "VN",
+        "created_at": "2024-04-17T09:38:27.277Z",
+        "google": false,
+        "isp": "Viettel Corporation",
+        "lastChecked": 1726283305,
+        "latency": 298.788,
+        "org": "Viettel Group",
+        "port": "3128",
+        "protocols": [
+            "http"
+        ],
+        "speed": 1,
+        "upTime": 73.81615598885793,
+        "upTimeSuccessCount": 795,
+        "upTimeTryCount": 1077,
+        "updated_at": "2024-09-14T03:08:25.991Z",
+        "responseTime": 355
+    }
+]

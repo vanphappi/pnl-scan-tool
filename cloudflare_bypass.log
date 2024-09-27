@@ -1,0 +1,4 @@
+2024-09-23 11:56:29,788 - INFO - Navigating to https://api-v2.solscan.io/v2/account/transfer/export?address=BoUgd1osXSDoQRVsDUm5EtkFsBfq4AqWoSbwXieEkidH
+2024-09-23 11:56:31,426 - INFO - Starting Cloudflare bypass.
+2024-09-23 12:01:16,552 - ERROR - An error occurred: [Errno 32] Broken pipe
+2024-09-23 12:01:16,556 - INFO - Closing the browser.
