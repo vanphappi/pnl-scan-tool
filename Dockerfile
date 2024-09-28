@@ -13,6 +13,6 @@ COPY . .
 # 
 RUN go build -ldflags="-s -w" -o ./build/execute .
 
-EXPOSE 8000
+EXPOSE 8002
 
 CMD ["./build/execute"]

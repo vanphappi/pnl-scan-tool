@@ -5,6 +5,7 @@ go 1.22.0
 toolchain go1.22.7
 
 require (
+	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/spf13/viper v1.19.0
 	go.mongodb.org/mongo-driver v1.16.1
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
@@ -26,6 +27,7 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
