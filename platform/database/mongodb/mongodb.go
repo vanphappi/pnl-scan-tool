@@ -176,13 +176,28 @@ func DeleteDocumentWithRollback(collectionName string, filter interface{}) (int6
 }
 
 // FindDocuments finds documents in the specified collection based on a filter
-func FindDocuments(collectionName string, filter interface{}, limit int64, sort bson.D) ([]bson.M, error) {
+func FindDocuments(collectionName string, filter interface{}, limit int64, sort interface{}) ([]bson.M, error) {
 	coll := GetCollection(collectionName)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	findOptions := options.Find().SetLimit(limit).SetSort(sort)
-	cursor, err := coll.Find(ctx, filter, findOptions)
+	// Handle nil filter
+	var filterDoc interface{}
+	if filter == nil {
+		filterDoc = bson.M{}
+	} else {
+		filterDoc = filter
+	}
+
+	// Create find options
+	findOptions := options.Find().SetLimit(limit)
+
+	// Handle nil sort
+	if sort != nil {
+		findOptions.SetSort(sort)
+	}
+
+	cursor, err := coll.Find(ctx, filterDoc, findOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find documents: %v", err)
 	}

@@ -32,34 +32,28 @@ func main() {
 
 	defer mongodb.Shutdown()
 
-	if len(os.Args) == 2 {
-		// Get arguments
-		tokenAddress := os.Args[1]
+	if len(os.Args) == 2 && os.Args[1] == "rescan" {
+
+		service.ReScanWalletPNLJob()
+	}
+
+	if len(os.Args) == 3 && os.Args[1] == "topholder" {
+
+		tokenAddress := os.Args[2]
+
+		// Call the PNLScan function with the parsed arguments
+		service.TopHoldersScan(tokenAddress)
+	}
+
+	if len(os.Args) == 3 && os.Args[1] == "toptrader" {
+
+		tokenAddress := os.Args[2]
 
 		// Call the PNLScan function with the parsed arguments
 		service.TopTraderScan(tokenAddress)
-		return
 	}
 
-	if len(os.Args) == 3 {
-
-		// Get arguments
-		address := os.Args[1]
-		numberStr := os.Args[2]
-
-		// Convert number argument to integer
-		number, err := strconv.Atoi(numberStr)
-
-		if err != nil {
-			fmt.Println("Error: second argument should be a number")
-			return
-		}
-
-		// Call the PNLScan function with the parsed arguments
-		service.PNLScan(address, number)
-	}
-
-	if len(os.Args) == 4 && os.Args[1] == "deep" {
+	if len(os.Args) == 4 && os.Args[1] == "deepscan" {
 
 		// Get arguments
 		address := os.Args[2]
@@ -75,6 +69,24 @@ func main() {
 
 		// Call the PNLScan function with the parsed arguments
 		service.DeepPNLScan(address, number)
+	}
+
+	if len(os.Args) == 4 && os.Args[1] == "scan" {
+
+		// Get arguments
+		address := os.Args[2]
+		numberStr := os.Args[3]
+
+		// Convert number argument to integer
+		number, err := strconv.Atoi(numberStr)
+
+		if err != nil {
+			fmt.Println("Error: second argument should be a number")
+			return
+		}
+
+		// Call the PNLScan function with the parsed arguments
+		service.PNLScan(address, number)
 	}
 
 }

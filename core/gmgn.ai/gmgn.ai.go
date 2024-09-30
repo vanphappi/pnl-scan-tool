@@ -88,13 +88,13 @@ func fetchWithRetry(url string) ([]byte, error) {
 		req.Header.Set("accept", "application/json")
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
 		req.Header.Set("Accept-Language", "en-US,en;q=0.9")
-		req.Header.Set("Referer", "https://solscan.io/") // Set referer to appear like a browser visit
+		req.Header.Set("Referer", "https://gmgn.ai/") // Set referer to appear like a browser visit
 		req.Header.Set("Connection", "keep-alive")
 
 		// Set cookies
 		cookie := &http.Cookie{
 			Name:  "__cf_bm",
-			Value: "THddocRJFL1aPybdb7rmv_rq4qq85i1zhmaotlBwmoI-1727366102-1.0.1.1-ibFVwSntsxA_gdnnFwcIPI9qcuiyJp4zBDSXOSrN_hbVTZpORpLqk8on8Mla3DtlgWhzVtRieJZ6M4G6mdaz4Q",
+			Value: "6bvHpK9N5UJRyUKt5VXXXIUYFOsjg0RLE6I2O5TkQzs-1727630091-1.0.1.1-qmGv5EnVAhJr4Osm9qrlaY_nSEOyCGr1PyI3MTgbTSvMSlrIlBu390EIi9txKloy6td.pjG1F3VcTlw1AVLZfA",
 			Path:  "/",
 		}
 

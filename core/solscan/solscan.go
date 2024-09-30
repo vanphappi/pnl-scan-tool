@@ -1,4 +1,4 @@
-package core
+package solscan
 
 import (
 	"crypto/tls"

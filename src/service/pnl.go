@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"pnl-solana-tool/core"
 	"pnl-solana-tool/core/photonsol"
+	"pnl-solana-tool/core/solscan"
 	"pnl-solana-tool/package/utils"
 	"pnl-solana-tool/platform/database/mongodb"
 	"strconv"
@@ -14,90 +14,91 @@ import (
 )
 
 type PNL struct {
-	WalletAddress string         `json:"wallet-address"`
-	TradeHistory  []TradeHistory `json:"trades"`
-	XPNLs         []XPNL         `json:"xpnl"`
-	LostXPNLs     []LostXPNL     `json:"lost-xpnl"`
-	SummaryReview SummaryReview  `json:"summary-review"`
+	WalletAddress string         `json:"wallet-address" bson:"walletaddress"`
+	TradeHistory  []TradeHistory `json:"trades" bson:"trades"`
+	XPNLs         []XPNL         `json:"xpnl" bson:"xpnl"`
+	LostXPNLs     []LostXPNL     `json:"lost-xpnl" bson:"lostxpnl"`
+	SummaryReview SummaryReview  `json:"summary-review" bson:"summaryreview"`
 }
 
 type TradeHistory struct {
-	TokenAddress string       `json:"token-address"`
-	TokenSymbol  string       `json:"token-symbol"`
-	EventTrades  []EventTrade `json:"event-trades"`
-	StartTime    string       `json:"start-time"`
-	EndTime      string       `json:"end-time"`
+	TokenAddress string       `json:"token-address" bson:"tokenaddress"`
+	TokenSymbol  string       `json:"token-symbol" bson:"tokensymbol"`
+	EventTrades  []EventTrade `json:"event-trades" bson:"eventtrades"`
+	StartTime    string       `json:"start-time" bson:"starttime"`
+	EndTime      string       `json:"end-time" bson:"endtime"`
 }
+
 type XPNL struct {
-	TokenAddress         string  `json:"token-address"`
-	TokenSymbol          string  `json:"token-symbol"`
-	CountBuy             int     `json:"count-buy"`
-	CountSell            int     `json:"count-sell"`
-	CountSellActual      int     `json:"count-sell-actual"`
-	TotalTokenBuy        float64 `json:"total-token-buy"`
-	TotalTokenSell       float64 `json:"total-token-sell"`
-	TotalTokenSellActual float64 `json:"total-token-sell-actual"`
-	TotalSolBuy          float64 `json:"total-sol-buy"`
-	ToltalSolSell        float64 `json:"toltal-sol-sell"`
-	ToltalSolSellActual  float64 `json:"toltal-sol-sell-actual"`
-	TokenHoldAmount      float64 `json:"token-hold-amount"`
-	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount"`
-	ProfitSol            float64 `json:"profit-sol"`
-	ProfitSolActual      float64 `json:"profit-sol-actual"`
-	XPNL                 float64 `json:"xpnl"`
-	XPNLRate             float64 `json:"xpnl-rate"`
-	PriceSolFirstBuy     float64 `json:"price-sol-first-buy"`
-	PriceSolBestSell     float64 `json:"price-sol-best-sell"`
-	XPNLTrade            float64 `json:"xpnl-trade"`
-	XPNLRateTrade        float64 `json:"xpnl-rate-trade"`
-	StartTime            string  `json:"start-time"`
-	EndTime              string  `json:"end-time"`
+	TokenAddress         string  `json:"token-address" bson:"tokenaddress"`
+	TokenSymbol          string  `json:"token-symbol" bson:"tokensymbol"`
+	CountBuy             int     `json:"count-buy" bson:"countbuy"`
+	CountSell            int     `json:"count-sell" bson:"countsell"`
+	CountSellActual      int     `json:"count-sell-actual" bson:"countsellactual"`
+	TotalTokenBuy        float64 `json:"total-token-buy" bson:"totaltokenbuy"`
+	TotalTokenSell       float64 `json:"total-token-sell" bson:"totaltokensell"`
+	TotalTokenSellActual float64 `json:"total-token-sell-actual" bson:"totaltokensellactual"`
+	TotalSolBuy          float64 `json:"total-sol-buy" bson:"totalsolbuy"`
+	TotalSolSell         float64 `json:"total-sol-sell" bson:"totalsolsell"`
+	TotalSolSellActual   float64 `json:"total-sol-sell-actual" bson:"totalsolsellactual"`
+	TokenHoldAmount      float64 `json:"token-hold-amount" bson:"tokenholdamount"`
+	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount" bson:"tokenholdsolamount"`
+	ProfitSol            float64 `json:"profit-sol" bson:"profitsol"`
+	ProfitSolActual      float64 `json:"profit-sol-actual" bson:"profitsolactual"`
+	XPNL                 float64 `json:"xpnl" bson:"xpnl"`
+	XPNLRate             float64 `json:"xpnl-rate" bson:"xpnlrate"`
+	PriceSolFirstBuy     float64 `json:"price-sol-first-buy" bson:"pricesolfirstbuy"`
+	PriceSolBestSell     float64 `json:"price-sol-best-sell" bson:"pricesolbestsell"`
+	XPNLTrade            float64 `json:"xpnl-trade" bson:"xpnltrade"`
+	XPNLRateTrade        float64 `json:"xpnl-rate-trade" bson:"xpnlratetrade"`
+	StartTime            string  `json:"start-time" bson:"starttime"`
+	EndTime              string  `json:"end-time" bson:"endtime"`
 }
 
 type LostXPNL struct {
-	TokenAddress         string  `json:"token-address"`
-	TokenSymbol          string  `json:"token-symbol"`
-	CountBuy             int     `json:"count-buy"`
-	CountSell            int     `json:"count-sell"`
-	CountSellActual      int     `json:"count-sell-actual"`
-	TotalTokenBuy        float64 `json:"total-token-buy"`
-	TotalTokenSell       float64 `json:"total-token-sell"`
-	TotalTokenSellActual float64 `json:"total-token-sell-actual"`
-	TotalSolBuy          float64 `json:"total-sol-buy"`
-	ToltalSolSell        float64 `json:"toltal-sol-sell"`
-	ToltalSolSellActual  float64 `json:"toltal-sol-sell-actual"`
-	TokenHoldAmount      float64 `json:"token-hold-amount"`
-	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount"`
-	ProfitSol            float64 `json:"profit-sol"`
-	ProfitSolActual      float64 `json:"profit-sol-actual"`
-	LostXPNL             float64 `json:"xpnl"`
-	LostXPNLRate         float64 `json:"lost-xpnl-rate"`
-	PriceSolFirstBuy     float64 `json:"price-sol-first-buy"`
-	PriceSolBestSell     float64 `json:"price-sol-best-sell"`
-	LostXPNLTrade        float64 `json:"xpnl-trade"`
-	LostXPNLRateTrade    float64 `json:"lost-xpnl-rate-trade"`
-	StartTime            string  `json:"start-time"`
-	EndTime              string  `json:"end-time"`
+	TokenAddress         string  `json:"token-address" bson:"tokenaddress"`
+	TokenSymbol          string  `json:"token-symbol" bson:"tokensymbol"`
+	CountBuy             int     `json:"count-buy" bson:"countbuy"`
+	CountSell            int     `json:"count-sell" bson:"countsell"`
+	CountSellActual      int     `json:"count-sell-actual" bson:"countsellactual"`
+	TotalTokenBuy        float64 `json:"total-token-buy" bson:"totaltokenbuy"`
+	TotalTokenSell       float64 `json:"total-token-sell" bson:"totaltokensell"`
+	TotalTokenSellActual float64 `json:"total-token-sell-actual" bson:"totaltokensellactual"`
+	TotalSolBuy          float64 `json:"total-sol-buy" bson:"totalsolbuy"`
+	TotalSolSell         float64 `json:"total-sol-sell" bson:"totalsolsell"`
+	TotalSolSellActual   float64 `json:"total-sol-sell-actual" bson:"totalsolsellactual"`
+	TokenHoldAmount      float64 `json:"token-hold-amount" bson:"tokenholdamount"`
+	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount" bson:"tokenholdsolamount"`
+	ProfitSol            float64 `json:"profit-sol" bson:"profitsol"`
+	ProfitSolActual      float64 `json:"profit-sol-actual" bson:"profitsolactual"`
+	LostXPNL             float64 `json:"xpnl" bson:"lostxpnl"`
+	LostXPNLRate         float64 `json:"lost-xpnl-rate" bson:"lostxpnlrate"`
+	PriceSolFirstBuy     float64 `json:"price-sol-first-buy" bson:"pricesolfirstbuy"`
+	PriceSolBestSell     float64 `json:"price-sol-best-sell" bson:"pricesolbestsell"`
+	LostXPNLTrade        float64 `json:"xpnl-trade" bson:"xpnltrade"`
+	LostXPNLRateTrade    float64 `json:"lost-xpnl-rate-trade" bson:"lostxpnlratetrade"`
+	StartTime            string  `json:"start-time" bson:"starttime"`
+	EndTime              string  `json:"end-time" bson:"endtime"`
 }
 
 type SummaryReview struct {
-	TotalSolPNLAmount       float64 `json:"total-sol-pnl-amount"`
-	TotalSolPNLAmountActual float64 `json:"total-sol-pnl-amount-actual"`
-	TotalWin                int     `json:"total-win"`
-	TotalLost               int     `json:"total-lost"`
-	WinRate                 float64 `json:"win-rate"`
-	BigXPNL                 int     `json:"big-xpnl"`
-	RateBigXPNL             float64 `json:"rate-big-xpnl"`
+	TotalSolPNLAmount       float64 `json:"total-sol-pnl-amount" bson:"totalsolpnlamount"`
+	TotalSolPNLAmountActual float64 `json:"total-sol-pnl-amount-actual" bson:"totalsolpnlamountactual"`
+	TotalWin                int     `json:"total-win" bson:"totalwin"`
+	TotalLost               int     `json:"total-lost" bson:"totallost"`
+	WinRate                 float64 `json:"win-rate" bson:"winrate"`
+	BigXPNL                 int     `json:"big-xpnl" bson:"bigxpnl"`
+	RateBigXPNL             float64 `json:"rate-big-xpnl" bson:"ratebigxpnl"`
 }
 
 type EventTrade struct {
-	Type         string  `json:"type"`
-	EventType    string  `json:"event-type"`
-	PriceSol     float64 `json:"price-sol"`
-	SolAmount    float64 `json:"sol-amount"`
-	TokensAmount float64 `json:"tokens-amount"`
-	Timestamp    int64   `json:"timestamp"`
-	DateTime     string  `json:"date-time"`
+	Type         string  `json:"type" bson:"type"`
+	EventType    string  `json:"event-type" bson:"eventtype"`
+	PriceSol     float64 `json:"price-sol" bson:"pricesol"`
+	SolAmount    float64 `json:"sol-amount" bson:"solamount"`
+	TokensAmount float64 `json:"tokens-amount" bson:"tokensamount"`
+	Timestamp    int64   `json:"timestamp" bson:"timestamp"`
+	DateTime     string  `json:"date-time" bson:"datetime"`
 }
 
 const epsilon = 1e-9
@@ -129,7 +130,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		return nil, err
 	}
 
-	solscan := core.Solscan{
+	solscan := solscan.Solscan{
 		Address:      WalletAddress,
 		ExcludeToken: "So11111111111111111111111111111111111111111",
 		Flow:         "in",
@@ -346,8 +347,8 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -381,8 +382,8 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -416,8 +417,8 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -467,7 +468,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.XPNL, xpnl.XPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.ToltalSolSell, xpnl.ToltalSolSellActual)
+		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
 		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.XPNLRate, xpnl.XPNLRateTrade)
 	}
@@ -481,7 +482,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.LostXPNL, xpnl.LostXPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.ToltalSolSell, xpnl.ToltalSolSellActual)
+		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
 		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.LostXPNLRate, xpnl.LostXPNLRateTrade)
 	}

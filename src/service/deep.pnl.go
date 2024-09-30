@@ -6,7 +6,6 @@ import (
 	"pnl-solana-tool/package/utils"
 	"pnl-solana-tool/platform/database/mongodb"
 	"strconv"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -60,7 +59,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			transaction.TokenAddress == "So11111111111111111111111111111111111111111" ||
 			transaction.TokenAddress == "So11111111111111111111111111111111111111112" {
 			fmt.Println("========================================================================================")
-			time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+			//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
 			continue
 		}
 
@@ -234,8 +233,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -269,8 +268,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -304,8 +303,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
 				TotalSolBuy:          totalSolBuy,
-				ToltalSolSell:        totalSolSell,
-				ToltalSolSellActual:  totalSolSellActual,
+				TotalSolSell:         totalSolSell,
+				TotalSolSellActual:   totalSolSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
@@ -355,7 +354,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.XPNL, xpnl.XPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.ToltalSolSell, xpnl.ToltalSolSellActual)
+		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
 		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.XPNLRate, xpnl.XPNLRateTrade)
 	}
@@ -369,7 +368,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.LostXPNL, xpnl.LostXPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.ToltalSolSell, xpnl.ToltalSolSellActual)
+		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
 		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.LostXPNLRate, xpnl.LostXPNLRateTrade)
 	}
