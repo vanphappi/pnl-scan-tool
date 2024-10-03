@@ -94,7 +94,7 @@ func fetchWithRetry(url string) ([]byte, error) {
 		// Set cookies
 		cookie := &http.Cookie{
 			Name:  "__cf_bm",
-			Value: "6bvHpK9N5UJRyUKt5VXXXIUYFOsjg0RLE6I2O5TkQzs-1727630091-1.0.1.1-qmGv5EnVAhJr4Osm9qrlaY_nSEOyCGr1PyI3MTgbTSvMSlrIlBu390EIi9txKloy6td.pjG1F3VcTlw1AVLZfA",
+			Value: "dagsAUZlN1axS1l_Jn.3zbmhseBuE1q7pQG.WNxUPYU-1727938621-1.0.1.1-dgBetV_3.wfWCaENExWQXOa4Bpo8xsTCOU4Mta5l3c03g_ux1aPN8WdnXFBfx4e35xfrf3oRqem.a2vyZLwV9g",
 			Path:  "/",
 		}
 
@@ -125,7 +125,10 @@ func fetchWithRetry(url string) ([]byte, error) {
 			jitter := time.Duration(rand.Intn(1000)) * time.Millisecond
 			totalWaitTime := baseWaitTime + jitter
 			fmt.Printf("Received %d, retrying in %v...\n", resp.StatusCode, totalWaitTime)
+			fmt.Println("Respone:", resp.Status)
 			// time.Sleep(totalWaitTime)
+
+			// time.Sleep(1 * time.Second)
 
 			// proxyURL = proxy.GetRandomProxy()
 			// tr.Proxy = http.ProxyURL(proxyURL)

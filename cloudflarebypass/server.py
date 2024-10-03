@@ -86,6 +86,30 @@ def bypass_cloudflare(url: str, retries: int, log: bool) -> ChromiumPage:
             display.stop()  # Stop Xvfb
         raise e
 
+# Endpoint to get cookies
+@app.get("/data")
+async def get_cookies(url: str, retries: int = 5):
+    if not is_safe_url(url):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    try:
+        driver = bypass_cloudflare(url, retries, log)
+        cookies = driver.cookies(as_dict=True)
+        user_agent = driver.user_agent
+
+        # Retrieve the page's body using the 'html' attribute (without calling it)
+        page_body = driver.html  # Access it as an attribute, not a method
+
+        # Extract the JSON block from the HTML
+        start_index = page_body.find('<pre>') + len('<pre>')
+        end_index = page_body.find('</pre>')
+        json_data = page_body[start_index:end_index].strip()
+
+        # Parse JSON
+        parsed_data = json.loads(json_data)
+        driver.quit()
+        return parsed_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint to get cookies
 @app.get("/cookies", response_model=CookieResponse)

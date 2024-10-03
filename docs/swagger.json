@@ -1,0 +1,84 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/wallettracker/add": {
+            "post": {
+                "description": "Creates a task with a specified duration, priority, and timeout, and adds it to the worker pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "add wallet tracker"
+                ],
+                "summary": "Add a new task to the task manager",
+                "parameters": [
+                    {
+                        "description": "Task Details",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/services.WalletTrackerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/services.WalletTrackerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/services.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "services.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "services.WalletTrackerRequest": {
+            "type": "object",
+            "properties": {
+                "walletaddress": {
+                    "type": "string",
+                    "example": "EBw6beJFQePbH1x9WzMX5ipBBr634drKX2N1bCzJVDwY"
+                }
+            }
+        },
+        "services.WalletTrackerResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "taskId": {
+                    "type": "string"
+                },
+                "timeout": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -43,6 +43,10 @@ func ActivityAllTradeToken(wallet string, token string) []Activity {
 
 		count += len(apiResponse.Data.Activities)
 
+		if count >= 51 {
+			break
+		}
+
 		fmt.Println("Scan Total Event Trade: ", count)
 
 		// Append activities to the slice

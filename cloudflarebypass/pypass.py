@@ -2,7 +2,8 @@ import time
 import logging
 import os
 import sys
-from cloudflarebypass.cloudflare_bypasser import CloudflareBypasser
+import json
+from cloudflare_bypasser import CloudflareBypasser
 from DrissionPage import ChromiumPage, ChromiumOptions
 
 # Configure logging
@@ -75,8 +76,22 @@ def main(url: str):
         logging.info("Enjoy the content!")
         logging.info("Title of the page: %s", driver.title)
 
+        # Retrieve the page's body using the 'html' attribute (without calling it)
+        page_body = driver.html  # Access it as an attribute, not a method
+
+        # Extract the JSON block from the HTML
+        start_index = page_body.find('<pre>') + len('<pre>')
+        end_index = page_body.find('</pre>')
+        json_data = page_body[start_index:end_index].strip()
+
+        # Parse JSON
+        parsed_data = json.loads(json_data)
+
+        print(parsed_data)
+
+
         # Sleep for a while to let the user see the result if needed
-        time.sleep(1)
+        #time.sleep(1)
     except Exception as e:
         logging.error("An error occurred: %s", str(e))
     finally:

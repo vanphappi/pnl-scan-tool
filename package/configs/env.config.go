@@ -7,12 +7,14 @@ import (
 )
 
 type Config struct {
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBUser     string `mapstructure:"DB_USER"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	DBName     string `mapstructure:"DB_NAME"`
-	ServerPort string `mapstructure:"SERVER_PORT"`
+	DB_HOST            string `mapstructure:"DB_HOST"`
+	DB_PORT            string `mapstructure:"DB_PORT"`
+	DB_USER            string `mapstructure:"DB_USER"`
+	DB_PASSWORD        string `mapstructure:"DB_PASSWORD"`
+	DB_NAME            string `mapstructure:"DB_NAME"`
+	SERVER_PORT        string `mapstructure:"SERVER_PORT"`
+	TELEGRAM_BOT_TOKEN string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+	CHANNEL_ID         int64  `mapstructure:"CHANNEL_ID"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

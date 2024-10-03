@@ -1,0 +1,54 @@
+definitions:
+  services.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  services.WalletTrackerRequest:
+    properties:
+      walletaddress:
+        example: EBw6beJFQePbH1x9WzMX5ipBBr634drKX2N1bCzJVDwY
+        type: string
+    type: object
+  services.WalletTrackerResponse:
+    properties:
+      message:
+        type: string
+      priority:
+        type: integer
+      taskId:
+        type: string
+      timeout:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/wallettracker/add:
+    post:
+      consumes:
+      - application/json
+      description: Creates a task with a specified duration, priority, and timeout,
+        and adds it to the worker pool
+      parameters:
+      - description: Task Details
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/services.WalletTrackerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/services.WalletTrackerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      summary: Add a new task to the task manager
+      tags:
+      - add wallet tracker
+swagger: "2.0"

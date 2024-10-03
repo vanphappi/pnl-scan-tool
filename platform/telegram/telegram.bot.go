@@ -1,4 +1,4 @@
-package sentryio
+package telegram
 
 import (
 	"log"

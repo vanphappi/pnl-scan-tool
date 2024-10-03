@@ -1,16 +1,16 @@
 version: "3.8"
 
 services:
-  core-api-service:
-    container_name: core-api
-    image: core-api
+  pnl-solana-tool-service:
+    container_name: pnl-solana-tool
+    image: pnl-solana-tool
     build:
       context: .
       dockerfile: Dockerfile
-    hostname: core-api
+    hostname: pnl-solana-tool
     restart: always
     networks:
-      - core-api-network
+      - pnl-solana-tool-network
     command: ["sh", "-c", "cd build/execute && ./server"]
     volumes:
       - .:/build
@@ -25,7 +25,7 @@ services:
     container_name: mongo-db
     hostname: mongodb
     networks:
-      - core-api-network
+      - pnl-solana-tool-network
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -36,9 +36,9 @@ services:
       - ./db:/data/db
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     depends_on:
-      - core-api-service
+      - pnl-solana-tool-service
 
 networks:
-  core-api-network:
-    name: core-api-network
+  pnl-solana-tool-network:
+    name: pnl-solana-tool-network
     driver: bridge

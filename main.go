@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	_ "pnl-solana-tool/docs"
 	"pnl-solana-tool/package/configs"
 	"pnl-solana-tool/platform/database/mongodb"
-	"pnl-solana-tool/src/service"
+	"pnl-solana-tool/src/services"
 	"strconv"
 )
 
@@ -19,11 +20,11 @@ func main() {
 	}
 
 	mongoConfig := mongodb.MongoDB{
-		DBUsername: env.DBUser,
-		DBPassword: env.DBPassword,
-		DBHost:     env.DBHost,
-		DBPort:     env.DBPort,
-		DBName:     env.DBName,
+		DBUsername: env.DB_NAME,
+		DBPassword: env.DB_PASSWORD,
+		DBHost:     env.DB_HOST,
+		DBPort:     env.DB_PORT,
+		DBName:     env.DB_NAME,
 	}
 
 	if err := mongodb.InitMongo(mongoConfig); err != nil {
@@ -34,7 +35,7 @@ func main() {
 
 	if len(os.Args) == 2 && os.Args[1] == "rescan" {
 
-		service.ReScanWalletPNLJob()
+		services.ReScanWalletPNLJob()
 	}
 
 	if len(os.Args) == 3 && os.Args[1] == "topholder" {
@@ -42,7 +43,7 @@ func main() {
 		tokenAddress := os.Args[2]
 
 		// Call the PNLScan function with the parsed arguments
-		service.TopHoldersScan(tokenAddress)
+		services.TopHoldersScan(tokenAddress)
 	}
 
 	if len(os.Args) == 3 && os.Args[1] == "toptrader" {
@@ -50,7 +51,7 @@ func main() {
 		tokenAddress := os.Args[2]
 
 		// Call the PNLScan function with the parsed arguments
-		service.TopTraderScan(tokenAddress)
+		services.TopTraderScan(tokenAddress)
 	}
 
 	if len(os.Args) == 4 && os.Args[1] == "deepscan" {
@@ -68,7 +69,7 @@ func main() {
 		}
 
 		// Call the PNLScan function with the parsed arguments
-		service.DeepPNLScan(address, number)
+		services.DeepPNLScan(address, number)
 	}
 
 	if len(os.Args) == 4 && os.Args[1] == "scan" {
@@ -86,7 +87,19 @@ func main() {
 		}
 
 		// Call the PNLScan function with the parsed arguments
-		service.PNLScan(address, number)
+		services.PNLScan(address, number)
 	}
 
+	// app := fiber.New()
+
+	// // Initialize the Task Manager
+	// taskManager := services.NewWalletTrackerTaskManager(4, 10, 2*time.Second)
+
+	// // Serve Swagger UI
+	// app.Get("/swagger/*", swagger.HandlerDefault) // Swagger endpoint
+
+	// handlers.WalletTrackerRoutes(app, taskManager)
+
+	// // Start the server
+	// app.Listen(":3000")
 }

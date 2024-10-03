@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"fmt"
@@ -55,7 +55,12 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 
 		if transaction.TokenAddress == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ||
 			transaction.TokenAddress == "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" ||
+			transaction.TokenAddress == "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" ||
 			transaction.TokenAddress == "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" ||
+			transaction.TokenAddress == "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" ||
+			transaction.TokenAddress == "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" ||
+			transaction.TokenAddress == "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" ||
+			transaction.TokenAddress == "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" ||
 			transaction.TokenAddress == "So11111111111111111111111111111111111111111" ||
 			transaction.TokenAddress == "So11111111111111111111111111111111111111112" {
 			fmt.Println("========================================================================================")
