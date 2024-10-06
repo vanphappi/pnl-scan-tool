@@ -1,14 +1,14 @@
-package photonsol
+package dexscreener
 
 import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
-	"pnl-solana-tool/package/utils"
 	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 var client = &http.Client{
@@ -42,52 +42,35 @@ var client = &http.Client{
 	},
 }
 
-// fetchDataPhotonFromAPI fetches data from the given API URL using randomized headers, cookies, and retry logic.
-func fetchDataPhotonFromAPI(url string) ([]byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+const maxRetries = 1000 // Maximum retry attempts
 
+// Fetch data from the API with retries and exponential backoff
+func fetchWithRetry(url string) ([]byte, error) {
+	// Create a new request
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Create a custom transport with TLS settings
-	// tr := &http.Transport{
-	// 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// }
-	// client := &http.Client{Transport: tr}
-
-	// proxyURL := proxy.GetRandomProxy()
-	// tr := &http.Transport{
-	// 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// 	Proxy:           http.ProxyURL(proxyURL),
-	// }
-	// client := &http.Client{Transport: tr}
-
-	// Smart retry with exponential backoff and random jitter
-
 	var body []byte
+	// var err error
+	for attempt := 0; attempt < maxRetries; attempt++ {
 
-	maxRetries := 100
+		// Set headers to mimic a real browser request
+		req.Header.Set("accept", "application/json")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
+		req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+		req.Header.Set("Referer", "https://io.dexscreener.com/") // Set referer to appear like a browser visit
+		req.Header.Set("Connection", "keep-alive")
 
-	for retries := 1; retries <= maxRetries; retries++ {
-		// Set a random User-Agent
-		req.Header.Set("User-Agent", utils.GetRandomUserAgent())
+		// Set cookies
+		// Add new cookies
+		req.Header.Add("Cookie", "__cf_bm=y4URIekeGY_vAVluVYHE2NEFk_9zrh0WK7iWEogWbmM-1728135408-1.0.1.1-vdfk6WRLaecbO1dLAgMjvuuJoD2Zt7yMhaP8lV6NiwuK0igE5Q8JF1mjNeCYY2xDJozOcT3ageImOGPJadog1FzJmnHBliK5MS_umJm01MI")
+		req.Header.Add("Cookie", "__cflb=0H28vzQ7jjUXq92cxrCqHJ17hceAH2AYkTHPrAUjHWV")
 
-		req.Header.Set("Referer", url)
-
-		// Set random headers
-		headers := utils.GetRandomHeaders()
-		for key, value := range headers {
-			req.Header.Set(key, value)
-		}
-
-		// Set random cookies
-		cookies := utils.GetRandomCookies()
-
-		for key, value := range cookies {
-			req.AddCookie(&http.Cookie{Name: key, Value: value})
-		}
-
+		// Add new User-Agent
+		req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
+		// Make the request
 		resp, err := client.Do(req)
 
 		if err != nil {
@@ -108,13 +91,28 @@ func fetchDataPhotonFromAPI(url string) ([]byte, error) {
 		// Handle Too Many Requests (429) or Forbidden (403) with dynamic backoff
 		if resp.StatusCode == 429 || resp.StatusCode == 403 {
 			// Exponential backoff with jitter
-			baseWaitTime := time.Duration(2<<retries) * time.Second
+			baseWaitTime := time.Duration(2<<attempt) * time.Second
 			jitter := time.Duration(rand.Intn(1000)) * time.Millisecond
 			totalWaitTime := baseWaitTime + jitter
 			fmt.Printf("Received %d, retrying in %v...\n", resp.StatusCode, totalWaitTime)
-			time.Sleep(totalWaitTime)
+			fmt.Println("Respone:", resp.Status)
+			// time.Sleep(totalWaitTime)
+
+			// respBody, err := ByPass(url)
+
+			// // fmt.Println("Request:", url)
+
+			// if err != nil {
+			// 	continue
+			// }
+
+			// return respBody, err
+
+			// time.Sleep(1 * time.Second)
+
 			// proxyURL = proxy.GetRandomProxy()
 			// tr.Proxy = http.ProxyURL(proxyURL)
+
 			continue
 		}
 
@@ -123,5 +121,5 @@ func fetchDataPhotonFromAPI(url string) ([]byte, error) {
 		fmt.Printf("Failed with status %d, body: %s\n", resp.StatusCode, respBody)
 	}
 
-	return nil, fmt.Errorf("exceeded maximum retries")
+	return nil, err
 }

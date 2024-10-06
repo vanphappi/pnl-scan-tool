@@ -55,6 +55,10 @@ func ActivityAllTrade(wallet string, scanDay int) []Activity {
 			break
 		}
 
+		// if len(allActivities) > 300 {
+		// 	break
+		// }
+
 		// If there's no next cursor, break the loop (end of data)
 		if apiResponse.Data.Next == "" {
 			break

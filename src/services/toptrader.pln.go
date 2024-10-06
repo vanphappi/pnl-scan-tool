@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	gmgnai "pnl-solana-tool/core/gmgn.ai"
 	"pnl-solana-tool/core/photonsol"
 	"pnl-solana-tool/package/files"
 	"pnl-solana-tool/platform/database/mongodb"
@@ -38,16 +39,18 @@ func TopTraderScan(tokenAddress string) {
 		return
 	}
 
-	topTraders, err := token.TopTraders(data.PoolId)
+	// topTraders, err := token.TopTraders(data.PoolId)
 
-	if err != nil {
-		fmt.Println("Error: " + err.Error())
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println("Error: " + err.Error())
+	// 	return
+	// }
+
+	topTraders := gmgnai.TopTradersToken(tokenAddress)
 
 	for _, trader := range topTraders {
 
-		fmt.Println("Trader: " + trader.Attributes.Signer)
+		fmt.Println("Trader: " + trader.Address)
 
 		// if trader.Attributes.BoughtCount < 1 || trader.Attributes.BoughtCount > 3 {
 		// 	time.Sleep(1 * time.Second)
@@ -77,7 +80,7 @@ func TopTraderScan(tokenAddress string) {
 
 		// time.Sleep(1 * time.Second)
 
-		pnlHistory, err := DeepPNLScan(trader.Attributes.Signer, 30)
+		pnlHistory, err := DeepPNLScan(trader.Address, 30)
 
 		if err != nil || pnlHistory == nil {
 			//time.Sleep(1 * time.Second)
@@ -87,7 +90,7 @@ func TopTraderScan(tokenAddress string) {
 		//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
 
 		if pnlHistory.SummaryReview.WinRate > 81.0 || pnlHistory.SummaryReview.RateBigXPNL > 51 {
-			files.AppendToFile("wallet.pnl.txt", trader.Attributes.Signer)
+			files.AppendToFile("wallet.pnl.txt", trader.Address)
 		}
 
 		// time.Sleep(1 * time.Second)
