@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"pnl-solana-tool/package/utils"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -62,16 +63,6 @@ type Token struct {
 	Price    float64 `json:"price"`
 }
 
-// Create a new HTTP client with a 30-second timeout
-// var client = &http.Client{
-// 	Timeout: time.Second * 30,
-// 	Transport: &http.Transport{
-// 		TLSClientConfig: &tls.Config{
-// 			InsecureSkipVerify: false, // Enable certificate verification
-// 		},
-// 	},
-// }
-
 var client = &http.Client{
 	Timeout: 30 * time.Second, // Set a timeout for the entire request
 	Transport: &http.Transport{
@@ -113,6 +104,13 @@ func fetchWithRetry(url string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
+	// Read headers from a JSON file
+	config, err := utils.ReadHeadersFromFile("cookies/header/gmai.headers.json")
+	if err != nil {
+		fmt.Println("Error reading headers:", err)
+		return nil, err
+	}
+
 	var body []byte
 	// var err error
 	for attempt := 0; attempt < maxRetries; attempt++ {
@@ -124,14 +122,22 @@ func fetchWithRetry(url string) ([]byte, error) {
 		req.Header.Set("Referer", "https://gmgn.ai/") // Set referer to appear like a browser visit
 		req.Header.Set("Connection", "keep-alive")
 
-		// Set cookies
-		cookie := &http.Cookie{
-			Name:  "__cf_bm",
-			Value: "dagsAUZlN1axS1l_Jn.3zbmhseBuE1q7pQG.WNxUPYU-1727938621-1.0.1.1-dgBetV_3.wfWCaENExWQXOa4Bpo8xsTCOU4Mta5l3c03g_ux1aPN8WdnXFBfx4e35xfrf3oRqem.a2vyZLwV9g",
-			Path:  "/",
-		}
+		// // Set cookies
+		// cookie := &http.Cookie{
+		// 	Name:  "__cf_bm",
+		// 	Value: "du18h5EJkRmsW3pbyydYrlKcCS5KnyQL_v1eBrq_aiU-1728406295-1.0.1.1-Hu4la6GZPD4iYPr8xFM2G_2MWhfxqCH4H2Oc.7hISuOOAnDtKF9qE7q6gGwLCdGgWRZP_B5IchEdvpaT2CDLug",
+		// 	Path:  "/",
+		// }
 
-		req.AddCookie(cookie)
+		// req.AddCookie(cookie)
+
+		// Add cookies to the request
+		for name, value := range config.Cookies {
+			req.AddCookie(&http.Cookie{
+				Name:  name,
+				Value: value,
+			})
+		}
 
 		// Make the request
 		resp, err := client.Do(req)
