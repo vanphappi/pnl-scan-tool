@@ -1,9 +1,9 @@
-package photonsol
+package photon
 
 import (
 	"encoding/json"
 	"fmt"
-	"pnl-solana-tool/package/utils"
+	"pnl-scan-tool/package/utils"
 	"strings"
 )
 
@@ -76,6 +76,7 @@ type TokenInfomation struct {
 // The function returns an error if it fails to fetch the data or parse the JSON
 // response.
 func (p *Token) TokenInfomation() (*TokenInfomation, error) {
+
 	apiUrl := fmt.Sprintf("https://photon-sol.tinyastro.io/en/lp/%s", p.TokenAddress)
 
 	result, err := fetchDataPhotonFromAPI(apiUrl)

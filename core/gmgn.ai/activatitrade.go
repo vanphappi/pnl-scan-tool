@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	gmaimodel "pnl-scan-tool/src/model/gmai.model"
 )
 
 // Function to get wallet activities with retry and pagination
-func getWalletActivities(wallet string, cursor string) (*ApiResponseGMGNAI, error) {
-	url := fmt.Sprintf("%s?type=buy&type=sell&wallet=%s&limit=%d", baseUrl, wallet, limit)
+func getWalletActivities(chain string, wallet string, cursor string) (*gmaimodel.ApiResponseGMGNAI, error) {
+	url := fmt.Sprintf("%s%s?type=buy&type=sell&wallet=%s&limit=%d", baseUrl, chain, wallet, limit)
+	fmt.Println(url)
 	if cursor != "" {
 		url += "&cursor=" + cursor
 	}
@@ -21,7 +23,7 @@ func getWalletActivities(wallet string, cursor string) (*ApiResponseGMGNAI, erro
 	}
 
 	// Parse JSON response
-	var apiResponse ApiResponseGMGNAI
+	var apiResponse gmaimodel.ApiResponseGMGNAI
 
 	if err := json.Unmarshal(result, &apiResponse); err != nil {
 		return nil, err
@@ -30,12 +32,12 @@ func getWalletActivities(wallet string, cursor string) (*ApiResponseGMGNAI, erro
 	return &apiResponse, nil
 }
 
-func ActivityAllTrade(wallet string, scanDay int) []Activity {
-	var allActivities []Activity
+func ActivityAllTrade(chain string, wallet string, scanDay int) []gmaimodel.Activity {
+	var allActivities []gmaimodel.Activity
 	cursor := ""
 	count := 0
 	for {
-		apiResponse, err := getWalletActivities(wallet, cursor)
+		apiResponse, err := getWalletActivities(chain, wallet, cursor)
 
 		if err != nil {
 			log.Fatalf("Error fetching data: %v", err)
@@ -70,9 +72,9 @@ func ActivityAllTrade(wallet string, scanDay int) []Activity {
 	return RemoveDuplicates(allActivities)
 }
 
-func RemoveDuplicates(Activitys []Activity) []Activity {
+func RemoveDuplicates(Activitys []gmaimodel.Activity) []gmaimodel.Activity {
 	seen := make(map[string]bool)
-	var uniqueTransfers []Activity
+	var uniqueTransfers []gmaimodel.Activity
 
 	for _, transfer := range Activitys {
 		if !seen[transfer.TokenAddress] {

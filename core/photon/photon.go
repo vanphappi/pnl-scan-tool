@@ -1,4 +1,4 @@
-package photonsol
+package photon
 
 import (
 	"crypto/tls"
@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"pnl-solana-tool/package/utils"
+	"pnl-scan-tool/package/utils"
 	"time"
 )
 
@@ -44,7 +44,6 @@ var client = &http.Client{
 
 // fetchDataPhotonFromAPI fetches data from the given API URL using randomized headers, cookies, and retry logic.
 func fetchDataPhotonFromAPI(url string) ([]byte, error) {
-
 	// Read headers from a JSON file
 	config, err := utils.ReadHeadersFromFile("cookies/header/photon.headers.json")
 	if err != nil {

@@ -2,99 +2,114 @@ package services
 
 import (
 	"fmt"
-	gmgnai "pnl-solana-tool/core/gmgn.ai"
-	"pnl-solana-tool/core/photonsol"
-	"pnl-solana-tool/package/files"
-	"pnl-solana-tool/platform/database/mongodb"
+	"pnl-scan-tool/core/dexscreener"
+	gmgnai "pnl-scan-tool/core/gmgn.ai"
+	"pnl-scan-tool/core/photon"
+	"pnl-scan-tool/package/files"
+	"pnl-scan-tool/platform/database/mongodb"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-/*
-TopTraderScan scans the Solana blockchain and extracts the top traders of a given token address.
-It will check if the token address already exists in the database, and if so, it will return immediately.
-It fetches the token information and the top traders of the token, and for each top trader, it will fetch the transactions and calculate the PNL history.
-It will then check if the PNL history meets certain conditions, and if so, it will append the wallet address to a file named "wallet.pnl.txt".
-It will then insert the token information into the database.
-*/
-func TopTraderScan(tokenAddress string) {
+func TopTraderScan(chain string, tokenAddress string) {
 
-	filter := bson.M{"tokenaddress": tokenAddress}
+	if chain == "sol" {
+		filter := bson.M{"tokenaddress": tokenAddress}
 
-	_, err := mongodb.FindOne("token_scan", filter)
+		_, err := mongodb.FindOne("token_scan_sol", filter)
 
-	if err == nil {
-		fmt.Println("Token address already exists in the database.")
-		return
-	}
+		if err == nil {
+			fmt.Println("Token address already exists in the database.")
+			return
+		}
 
-	token := photonsol.Token{
-		TokenAddress: tokenAddress,
-	}
+		token := photon.Token{
+			TokenAddress: tokenAddress,
+		}
 
-	data, err := token.TokenInfomation()
+		data, err := token.TokenInfomation()
 
-	if err != nil {
-		fmt.Println("Error: " + err.Error())
-		return
-	}
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			return
+		}
 
-	// topTraders, err := token.TopTraders(data.PoolId)
-
-	// if err != nil {
-	// 	fmt.Println("Error: " + err.Error())
-	// 	return
-	// }
-
-	topTraders := gmgnai.TopTradersToken(tokenAddress)
-
-	for _, trader := range topTraders {
-
-		fmt.Println("Trader: " + trader.Address)
-
-		// if trader.Attributes.BoughtCount < 1 || trader.Attributes.BoughtCount > 3 {
-		// 	time.Sleep(1 * time.Second)
-		// 	continue
-		// }
-
-		// solscan := core.Solscan{
-		// 	Address:      trader.Attributes.Signer,
-		// 	ExcludeToken: "So11111111111111111111111111111111111111111",
-		// 	Flow:         "in",
-		// }
-
-		// transactions, err := solscan.GetTransactions(30)
+		// topTraders, err := token.TopTraders(data.PoolId)
 
 		// if err != nil {
-		// 	//files.DeleteFile("wallet.csv")
-		// 	time.Sleep(1 * time.Second)
-
-		// 	continue
+		// 	fmt.Println("Error: " + err.Error())
+		// 	return
 		// }
 
-		// if len(transactions) > 99 || len(transactions) < 3 {
-		// 	//files.DeleteFile("wallet.csv")
-		// 	time.Sleep(1 * time.Second)
-		// 	continue
-		// }
+		topTraders := gmgnai.TopTradersToken(chain, tokenAddress)
 
-		// time.Sleep(1 * time.Second)
+		for _, trader := range topTraders {
 
-		pnlHistory, err := DeepPNLScan(trader.Address, 30)
+			fmt.Println("Trader: " + trader.Address)
 
-		if err != nil || pnlHistory == nil {
-			//time.Sleep(1 * time.Second)
-			continue
+			pnlHistory, err := DeepPNLScanSol(chain, trader.Address, 30)
+
+			if err != nil || pnlHistory == nil {
+				//time.Sleep(1 * time.Second)
+				continue
+			}
+
+			//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+
+			if pnlHistory.SummaryReview.RateBigXPNL > 51 {
+				files.AppendToFile("wallet.pnl.txt", trader.Address)
+			}
+
+			// time.Sleep(1 * time.Second)
 		}
 
-		//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+		mongodb.InsertDocumentWithRollback("token_scan_sol", data)
+	} else if chain == "eth" {
 
-		if pnlHistory.SummaryReview.WinRate > 81.0 || pnlHistory.SummaryReview.RateBigXPNL > 51 {
-			files.AppendToFile("wallet.pnl.txt", trader.Address)
+		tokenAddress = strings.ToLower(tokenAddress)
+
+		filter := bson.M{"contractaddress": tokenAddress}
+
+		_, err := mongodb.FindOne("token_scan_eth", filter)
+
+		if err == nil {
+			fmt.Println("Token address already exists in the database.")
+			return
 		}
 
-		// time.Sleep(1 * time.Second)
+		data, err := dexscreener.TokenInfomation("ethereum", tokenAddress)
+
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			return
+		}
+
+		topTraders := gmgnai.TopTradersToken(chain, tokenAddress)
+
+		for _, trader := range topTraders {
+
+			fmt.Println("Trader: " + trader.Address)
+
+			pnlHistory, err := DeepPNLScanETH(chain, trader.Address, 30)
+
+			if err != nil || pnlHistory == nil {
+				//time.Sleep(1 * time.Second)
+				continue
+			}
+
+			//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+
+			if pnlHistory.SummaryReview.RateBigXPNL > 51 {
+				files.AppendToFile("wallet.pnl.txt", trader.Address)
+			}
+
+			// time.Sleep(1 * time.Second)
+		}
+
+		mongodb.InsertDocumentWithRollback("token_scan_eth", data.QI.QuickiAudit)
+
+	} else {
+		return
 	}
-
-	mongodb.InsertDocumentWithRollback("token_scan", data)
 }

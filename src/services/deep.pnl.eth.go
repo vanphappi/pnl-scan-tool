@@ -2,40 +2,40 @@ package services
 
 import (
 	"fmt"
-	gmgnai "pnl-solana-tool/core/gmgn.ai"
-	"pnl-solana-tool/package/utils"
-	"pnl-solana-tool/platform/database/mongodb"
+	gmgnai "pnl-scan-tool/core/gmgn.ai"
+	"pnl-scan-tool/package/utils"
+	"pnl-scan-tool/platform/database/mongodb"
+	ethmodel "pnl-scan-tool/src/model/eth.model"
+	gmaimodel "pnl-scan-tool/src/model/gmai.model"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
+func DeepPNLScanETH(chain string, walletAddress string, scanDay int) (*ethmodel.PNL, error) {
 	var collection string
 
 	if scanDay == 0 {
-		collection = "all_time_pnl_wallet"
+		collection = "all_time_pnl_wallet_eth"
 	} else {
-		collection = "30_day_pnl_wallet"
+		collection = "30_day_pnl_wallet_eth"
 	}
 
-	var pnlHistory PNL
+	var pnlHistory ethmodel.PNL
 
-	pnlHistory.WalletAddress = WalletAddress
+	pnlHistory.WalletAddress = walletAddress
 
-	filter := bson.M{"walletaddress": WalletAddress}
+	filter := bson.M{"walletaddress": walletAddress}
 
 	_, err := mongodb.FindOne(collection, filter)
 
 	if err == nil && scanDay != 0 {
 		fmt.Println("Wallet Scan PNL already exists in the database.")
 
-		// files.DeleteFile("wallet.csv")
-
 		return nil, err
 	}
 
-	transactions := gmgnai.ActivityAllTrade(WalletAddress, scanDay)
+	transactions := gmgnai.ActivityAllTrade(chain, walletAddress, scanDay)
 
 	totalToken := len(transactions)
 
@@ -47,39 +47,15 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 	fmt.Println("")
 
 	for _, transaction := range transactions {
-		var tradeHistory TradeHistory
+		var tradeHistory ethmodel.TradeHistory
 
 		count++
 
 		fmt.Println("Scanning Token Address: " + transaction.TokenAddress)
 
-		if transaction.TokenAddress == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ||
-			transaction.TokenAddress == "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" ||
-			transaction.TokenAddress == "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" ||
-			transaction.TokenAddress == "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" ||
-			transaction.TokenAddress == "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" ||
-			transaction.TokenAddress == "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" ||
-			transaction.TokenAddress == "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" ||
-			transaction.TokenAddress == "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" ||
-			transaction.TokenAddress == "So11111111111111111111111111111111111111111" ||
-			transaction.TokenAddress == "So11111111111111111111111111111111111111112" {
-			fmt.Println("========================================================================================")
-			//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+		if transaction.TokenAddress == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" {
 			continue
 		}
-
-		// token := photonsol.Token{
-		// 	TokenAddress: transaction.TokenAddress,
-		// }
-
-		// data, err := token.TokenInfomation()
-
-		// if err != nil {
-		// 	fmt.Println("Error: " + err.Error())
-		// 	fmt.Println("========================================================================================")
-		// 	time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
-		// 	continue
-		// }
 
 		tradeHistory.TokenAddress = transaction.TokenAddress
 		tradeHistory.TokenSymbol = transaction.Token.Symbol //data.TokenSymbol
@@ -88,7 +64,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 
 		fmt.Println("----------------------")
 
-		tradeTransactions := gmgnai.ActivityAllTradeToken(WalletAddress, transaction.TokenAddress)
+		tradeTransactions := gmgnai.ActivityAllTradeToken(chain, walletAddress, transaction.TokenAddress)
 
 		var countBuy int = 0
 		var countSell int = 0
@@ -97,33 +73,32 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		var totalTokenSell float64 = 0
 		var totalTokenSellActual float64 = 0
 
-		var totalSolBuy float64 = 0
-		var totalSolSell float64 = 0
-		var totalSolSellActual float64 = 0
+		var totalETHBuy float64 = 0
+		var totalETHSell float64 = 0
+		var totalETHSellActual float64 = 0
 
 		var tokenHoldAmount float64 = 0
-		var tokenHoldSolAmount float64 = 0
+		var tokenHoldETHAmount float64 = 0
 
-		var priceSolFirstBuy float64 = 0
-		var priceSolBestSell float64 = 0
+		var priceETHFirstBuy float64 = 0
+		var priceETHBestSell float64 = 0
 
-		var lastTracsaction gmgnai.Activity
+		var lastTracsaction gmaimodel.Activity
 
 		for i := len(tradeTransactions) - 1; i >= 0; i-- {
 			tradeTransaction := tradeTransactions[i]
 
-			var eventTrade EventTrade
+			var eventTrade ethmodel.EventTrade
 
-			if tradeTransaction.QuoteAddress != "So11111111111111111111111111111111111111112" &&
-				tradeTransaction.QuoteAddress != "So11111111111111111111111111111111111111111" {
+			if tradeTransaction.QuoteAddress != "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" {
 				continue
 			}
 
 			lastTracsaction = tradeTransaction
 
 			eventTrade.EventType = tradeTransaction.EventType
-			eventTrade.PriceSol = tradeTransaction.Price
-			eventTrade.SolAmount = utils.ConvertStringToFloat64(tradeTransaction.QuoteAmount)
+			eventTrade.PriceETH = tradeTransaction.Price
+			eventTrade.ETHAmount = utils.ConvertStringToFloat64(tradeTransaction.QuoteAmount)
 			eventTrade.TokensAmount = utils.ConvertStringToFloat64(tradeTransaction.TokenAmount)
 			eventTrade.Timestamp = tradeTransaction.Timestamp
 			eventTrade.DateTime = utils.ConvertTimestampToDate(tradeTransaction.Timestamp)
@@ -134,24 +109,24 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			fmt.Println("----------------------")
 
 			if eventTrade.EventType == "buy" {
-				if priceSolFirstBuy == 0 {
-					priceSolFirstBuy = eventTrade.PriceSol
+				if priceETHFirstBuy == 0 {
+					priceETHFirstBuy = eventTrade.PriceETH
 				}
 
 				totalTokenBuy += eventTrade.TokensAmount
 
 				tokenHoldAmount += eventTrade.TokensAmount
 
-				totalSolBuy += eventTrade.SolAmount
+				totalETHBuy += eventTrade.ETHAmount
 
 				countBuy++
 			} else if eventTrade.EventType == "sell" {
-				if eventTrade.PriceSol > priceSolBestSell {
-					priceSolBestSell = eventTrade.PriceSol
+				if eventTrade.PriceETH > priceETHBestSell {
+					priceETHBestSell = eventTrade.PriceETH
 				}
 
 				if eventTrade.TokensAmount > tokenHoldAmount {
-					totalSolSell += tokenHoldAmount * eventTrade.PriceSol
+					totalETHSell += tokenHoldAmount * eventTrade.PriceETH
 					totalTokenSell += tokenHoldAmount
 
 					if tokenHoldAmount != 0 {
@@ -161,7 +136,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 					tokenHoldAmount = 0
 
 				} else {
-					totalSolSell += eventTrade.SolAmount
+					totalETHSell += eventTrade.ETHAmount
 					totalTokenSell += eventTrade.TokensAmount
 
 					tokenHoldAmount -= eventTrade.TokensAmount
@@ -169,7 +144,7 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 					countSell++
 				}
 
-				totalSolSellActual += eventTrade.SolAmount
+				totalETHSellActual += eventTrade.ETHAmount
 				totalTokenSellActual += eventTrade.TokensAmount
 
 				CountSellActual++
@@ -185,10 +160,10 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		tradeHistory.StartTime = tradeHistory.EventTrades[0].DateTime
 		tradeHistory.EndTime = tradeHistory.EventTrades[len(tradeHistory.EventTrades)-1].DateTime
 
-		tokenHoldSolAmount = (lastTracsaction.Price * lastTracsaction.Token.Price) / lastTracsaction.PriceUSD * tokenHoldAmount // data.PriceQuote * tokenHoldAmount
+		tokenHoldETHAmount = (lastTracsaction.Price * lastTracsaction.Token.Price) / lastTracsaction.PriceUSD * tokenHoldAmount // data.PriceQuote * tokenHoldAmount
 
-		var profitSol float64 = totalSolSell - totalSolBuy + tokenHoldSolAmount
-		var profitSolActual float64 = totalSolSellActual - totalSolBuy + tokenHoldSolAmount
+		var profitETH float64 = totalETHSell - totalETHBuy + tokenHoldETHAmount
+		var profitETHActual float64 = totalETHSellActual - totalETHBuy + tokenHoldETHAmount
 
 		fmt.Println("************************************************************************************")
 		fmt.Println("")
@@ -196,8 +171,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		progress := fmt.Sprintf("Scan Progress: %.2f %%", (float64(count)/float64(totalToken))*100.0)
 		totalScan := fmt.Sprintf("Total Scan: %d/%d", count, totalToken)
 
-		fmt.Println("Profit SOL: ", profitSol)
-		fmt.Println("Profit SOL Actual: ", profitSolActual)
+		fmt.Println("Profit ETH: ", profitETH)
+		fmt.Println("Profit ETH Actual: ", profitETHActual)
 
 		fmt.Println("")
 
@@ -207,11 +182,11 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		fmt.Println("")
 
 		pnlHistory.TradeHistory = append(pnlHistory.TradeHistory, tradeHistory)
-		pnlHistory.SummaryReview.TotalSolPNLAmount += profitSol
-		pnlHistory.SummaryReview.TotalSolPNLAmountActual += profitSolActual
+		pnlHistory.SummaryReview.TotalETHPNLAmount += profitETH
+		pnlHistory.SummaryReview.TotalETHPNLAmountActual += profitETHActual
 
-		fmt.Println("PNL SOL: ", pnlHistory.SummaryReview.TotalSolPNLAmount)
-		fmt.Println("PNL SOL Actual: ", pnlHistory.SummaryReview.TotalSolPNLAmountActual)
+		fmt.Println("PNL ETH: ", pnlHistory.SummaryReview.TotalETHPNLAmount)
+		fmt.Println("PNL ETH Actual: ", pnlHistory.SummaryReview.TotalETHPNLAmountActual)
 
 		var xPNL float64 = 0
 		var xPNLRate float64 = 0
@@ -223,34 +198,34 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		var lostXPNLTrade float64 = 0
 		var lostXPNLRateTrade float64 = 0
 
-		if profitSol > epsilon {
+		if profitETH > epsilon {
 			pnlHistory.SummaryReview.TotalWin++
 			if countBuy != 0 {
-				xPNL = (totalSolSell + tokenHoldSolAmount) / totalSolBuy
-				xPNLRate = (profitSol / totalSolBuy) * 100
-				xPNLTrade = priceSolBestSell / priceSolFirstBuy
-				xPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
+				xPNL = (totalETHSell + tokenHoldETHAmount) / totalETHBuy
+				xPNLRate = (profitETH / totalETHBuy) * 100
+				xPNLTrade = priceETHBestSell / priceETHFirstBuy
+				xPNLRateTrade = ((priceETHBestSell - priceETHFirstBuy) / priceETHFirstBuy) * 100
 			}
-			pnlHistory.XPNLs = append(pnlHistory.XPNLs, XPNL{
+			pnlHistory.XPNLs = append(pnlHistory.XPNLs, ethmodel.XPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
-				TotalSolBuy:          totalSolBuy,
-				TotalSolSell:         totalSolSell,
-				TotalSolSellActual:   totalSolSellActual,
+				TotalETHBuy:          totalETHBuy,
+				TotalETHSell:         totalETHSell,
+				TotalETHSellActual:   totalETHSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
 				TokenHoldAmount:      tokenHoldAmount,
-				TokenHoldSolAmount:   tokenHoldSolAmount,
-				ProfitSol:            profitSol,
-				ProfitSolActual:      profitSolActual,
+				TokenHoldETHAmount:   tokenHoldETHAmount,
+				ProfitETH:            profitETH,
+				ProfitETHActual:      profitETHActual,
 				XPNL:                 xPNL,
 				XPNLRate:             xPNLRate,
-				PriceSolFirstBuy:     priceSolFirstBuy,
-				PriceSolBestSell:     priceSolBestSell,
+				PriceETHFirstBuy:     priceETHFirstBuy,
+				PriceETHBestSell:     priceETHBestSell,
 				XPNLTrade:            xPNLTrade,
 				XPNLRateTrade:        xPNLRateTrade,
 				StartTime:            tradeHistory.EventTrades[0].DateTime,
@@ -258,34 +233,34 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			})
 		}
 
-		if profitSol <= epsilon && profitSolActual > epsilon {
+		if profitETH <= epsilon && profitETHActual > epsilon {
 			pnlHistory.SummaryReview.TotalWin++
 			if countBuy != 0 {
-				xPNL = (totalSolSell + tokenHoldSolAmount) / totalSolBuy
-				xPNLRate = (profitSol / totalSolBuy) * 100
-				xPNLTrade = priceSolBestSell / priceSolFirstBuy
-				xPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
+				xPNL = (totalETHSell + tokenHoldETHAmount) / totalETHBuy
+				xPNLRate = (profitETH / totalETHBuy) * 100
+				xPNLTrade = priceETHBestSell / priceETHFirstBuy
+				xPNLRateTrade = ((priceETHBestSell - priceETHFirstBuy) / priceETHFirstBuy) * 100
 			}
-			pnlHistory.XPNLs = append(pnlHistory.XPNLs, XPNL{
+			pnlHistory.XPNLs = append(pnlHistory.XPNLs, ethmodel.XPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
-				TotalSolBuy:          totalSolBuy,
-				TotalSolSell:         totalSolSell,
-				TotalSolSellActual:   totalSolSellActual,
+				TotalETHBuy:          totalETHBuy,
+				TotalETHSell:         totalETHSell,
+				TotalETHSellActual:   totalETHSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
 				TokenHoldAmount:      tokenHoldAmount,
-				TokenHoldSolAmount:   tokenHoldSolAmount,
-				ProfitSol:            profitSol,
-				ProfitSolActual:      profitSolActual,
+				TokenHoldETHAmount:   tokenHoldETHAmount,
+				ProfitETH:            profitETH,
+				ProfitETHActual:      profitETHActual,
 				XPNL:                 xPNL,
 				XPNLRate:             xPNLRate,
-				PriceSolFirstBuy:     priceSolFirstBuy,
-				PriceSolBestSell:     priceSolBestSell,
+				PriceETHFirstBuy:     priceETHFirstBuy,
+				PriceETHBestSell:     priceETHBestSell,
 				XPNLTrade:            xPNLTrade,
 				XPNLRateTrade:        xPNLRateTrade,
 				StartTime:            tradeHistory.EventTrades[0].DateTime,
@@ -293,34 +268,34 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			})
 		}
 
-		if profitSol <= epsilon && profitSolActual <= epsilon {
+		if profitETH <= epsilon && profitETHActual <= epsilon {
 			pnlHistory.SummaryReview.TotalLost++
 			if countBuy != 0 {
-				lostXPNL = (totalSolSell + tokenHoldSolAmount) / totalSolBuy
-				lostXPNLRate = (profitSol / totalSolBuy) * 100
-				lostXPNLTrade = priceSolBestSell / priceSolFirstBuy
-				lostXPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
+				lostXPNL = (totalETHSell + tokenHoldETHAmount) / totalETHBuy
+				lostXPNLRate = (profitETH / totalETHBuy) * 100
+				lostXPNLTrade = priceETHBestSell / priceETHFirstBuy
+				lostXPNLRateTrade = ((priceETHBestSell - priceETHFirstBuy) / priceETHFirstBuy) * 100
 			}
-			pnlHistory.LostXPNLs = append(pnlHistory.LostXPNLs, LostXPNL{
+			pnlHistory.LostXPNLs = append(pnlHistory.LostXPNLs, ethmodel.LostXPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
 				CountSell:            countSell,
 				CountSellActual:      CountSellActual,
-				TotalSolBuy:          totalSolBuy,
-				TotalSolSell:         totalSolSell,
-				TotalSolSellActual:   totalSolSellActual,
+				TotalETHBuy:          totalETHBuy,
+				TotalETHSell:         totalETHSell,
+				TotalETHSellActual:   totalETHSellActual,
 				TotalTokenBuy:        totalTokenBuy,
 				TotalTokenSell:       totalTokenSell,
 				TotalTokenSellActual: totalTokenSellActual,
 				TokenHoldAmount:      tokenHoldAmount,
-				TokenHoldSolAmount:   tokenHoldSolAmount,
-				ProfitSol:            profitSol,
-				ProfitSolActual:      profitSolActual,
+				TokenHoldETHAmount:   tokenHoldETHAmount,
+				ProfitETH:            profitETH,
+				ProfitETHActual:      profitETHActual,
 				LostXPNL:             lostXPNL,
 				LostXPNLRate:         lostXPNLRate,
-				PriceSolFirstBuy:     priceSolFirstBuy,
-				PriceSolBestSell:     priceSolBestSell,
+				PriceETHFirstBuy:     priceETHFirstBuy,
+				PriceETHBestSell:     priceETHBestSell,
 				LostXPNLTrade:        lostXPNLTrade,
 				LostXPNLRateTrade:    lostXPNLRateTrade,
 				StartTime:            tradeHistory.EventTrades[0].DateTime,
@@ -359,8 +334,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.XPNL, xpnl.XPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
-		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
+		fmt.Printf(" Total ETH Buy: %.2f ETH  | Total ETH Sell: %.2f ETH | Total ETH Sell Actual: %.2f ETH\n", xpnl.TotalETHBuy, xpnl.TotalETHSell, xpnl.TotalETHSellActual)
+		fmt.Printf(" Profit ETH: %.2f ETH | Profit ETH Actual: %.2f ETH\n", xpnl.ProfitETH, xpnl.ProfitETHActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.XPNLRate, xpnl.XPNLRateTrade)
 	}
 
@@ -373,8 +348,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 			totalBigXPNL++
 		}
 		fmt.Printf("%s - %.2fx | Trade:%2.fx\n Total Buy: %d | Total Sell: %d | StartTime: %s | EndTime: %s\n", xpnl.TokenSymbol, xpnl.LostXPNL, xpnl.LostXPNLTrade, xpnl.CountBuy, xpnl.CountSell, xpnl.StartTime, xpnl.EndTime)
-		fmt.Printf(" Total Sol Buy: %.2f SOL  | Total Sol Sell: %.2f SOL | Total Sol Sell Actual: %.2f SOL\n", xpnl.TotalSolBuy, xpnl.TotalSolSell, xpnl.TotalSolSellActual)
-		fmt.Printf(" Profit Sol: %.2f SOL | Profit Sol Actual: %.2f SOL\n", xpnl.ProfitSol, xpnl.ProfitSolActual)
+		fmt.Printf(" Total ETH Buy: %.2f ETH  | Total ETH Sell: %.2f ETH | Total ETH Sell Actual: %.2f ETH\n", xpnl.TotalETHBuy, xpnl.TotalETHSell, xpnl.TotalETHSellActual)
+		fmt.Printf(" Profit ETH: %.2f ETH | Profit ETH Actual: %.2f ETH\n", xpnl.ProfitETH, xpnl.ProfitETHActual)
 		fmt.Printf(" xPNL Rate: %.2f %% | xPNL Rate Trade: %.2f %%\n", xpnl.LostXPNLRate, xpnl.LostXPNLRateTrade)
 	}
 
@@ -387,8 +362,8 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 	fmt.Println("Total Win: ", pnlHistory.SummaryReview.TotalWin)
 	fmt.Println("Total Lost: ", pnlHistory.SummaryReview.TotalLost)
 	fmt.Printf("Win Rate: %2.f %%\n", pnlHistory.SummaryReview.WinRate)
-	fmt.Println("Total PNL SOL: ", pnlHistory.SummaryReview.TotalSolPNLAmount)
-	fmt.Println("Total PNL SOL Actual: ", pnlHistory.SummaryReview.TotalSolPNLAmountActual)
+	fmt.Println("Total PNL ETH: ", pnlHistory.SummaryReview.TotalETHPNLAmount)
+	fmt.Println("Total PNL ETH Actual: ", pnlHistory.SummaryReview.TotalETHPNLAmountActual)
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 	update := bson.M{"$set": bson.M{
@@ -404,8 +379,6 @@ func DeepPNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		fmt.Println(err)
 		return nil, err
 	}
-
-	//files.DeleteFile("wallet.csv")
 
 	return &pnlHistory, nil
 

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	gmaimodel "pnl-scan-tool/src/model/gmai.model"
 )
 
 // Function to get wallet activities with retry and pagination
-func getWalletActivitiesToken(wallet string, token string, cursor string) (*ApiResponseGMGNAI, error) {
-	url := fmt.Sprintf("%s?type=buy&type=sell&wallet=%s&limit=%d&token=%s", baseUrl, wallet, limit, token)
+func getWalletActivitiesToken(chain string, wallet string, token string, cursor string) (*gmaimodel.ApiResponseGMGNAI, error) {
+	url := fmt.Sprintf("%s%s?type=buy&type=sell&wallet=%s&limit=%d&token=%s", baseUrl, chain, wallet, limit, token)
 	if cursor != "" {
 		url += "&cursor=" + cursor
 	}
@@ -21,7 +22,7 @@ func getWalletActivitiesToken(wallet string, token string, cursor string) (*ApiR
 	}
 
 	// Parse JSON response
-	var apiResponse ApiResponseGMGNAI
+	var apiResponse gmaimodel.ApiResponseGMGNAI
 
 	if err := json.Unmarshal(result, &apiResponse); err != nil {
 		return nil, err
@@ -30,12 +31,12 @@ func getWalletActivitiesToken(wallet string, token string, cursor string) (*ApiR
 	return &apiResponse, nil
 }
 
-func ActivityAllTradeToken(wallet string, token string) []Activity {
-	var allActivities []Activity
+func ActivityAllTradeToken(chain string, wallet string, token string) []gmaimodel.Activity {
+	var allActivities []gmaimodel.Activity
 	cursor := ""
 	count := 0
 	for {
-		apiResponse, err := getWalletActivitiesToken(wallet, token, cursor)
+		apiResponse, err := getWalletActivitiesToken(chain, wallet, token, cursor)
 
 		if err != nil {
 			log.Fatalf("Error fetching data: %v", err)

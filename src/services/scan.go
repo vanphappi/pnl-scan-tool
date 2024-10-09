@@ -2,25 +2,42 @@ package services
 
 import (
 	"fmt"
-	"pnl-solana-tool/platform/database/mongodb"
+	"pnl-scan-tool/platform/database/mongodb"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ReScanWalletPNLJob() {
-	collection := "all_time_pnl_wallet"
+func ReScanWalletPNLJob(chain string) {
+	var collection string
 
-	filter := bson.M{}
+	if chain == "sol" {
+		collection = "all_time_pnl_wallet_sol"
+		filter := bson.M{}
 
-	pnlWalletTracker, err := mongodb.FindDocuments(collection, filter, 0, nil)
+		pnlWalletTracker, err := mongodb.FindDocuments(collection, filter, 0, nil)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+		if err != nil {
+			fmt.Println(err)
+		}
 
-	for _, wallet := range pnlWalletTracker {
-		fmt.Println("Scan:", wallet["walletaddress"])
-		DeepPNLScan(wallet["walletaddress"].(string), 0)
+		for _, wallet := range pnlWalletTracker {
+			fmt.Println("Scan:", wallet["walletaddress"])
+			DeepPNLScanSol(chain, wallet["walletaddress"].(string), 0)
+		}
+	} else if chain == "eth" {
+		collection := "all_time_pnl_wallet_eth"
+		filter := bson.M{}
+
+		pnlWalletTracker, err := mongodb.FindDocuments(collection, filter, 0, nil)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for _, wallet := range pnlWalletTracker {
+			fmt.Println("Scan:", wallet["walletaddress"])
+			DeepPNLScanETH(chain, wallet["walletaddress"].(string), 0)
+		}
 	}
 
 }

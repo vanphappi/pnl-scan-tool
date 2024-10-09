@@ -2,123 +2,30 @@ package services
 
 import (
 	"fmt"
-	"pnl-solana-tool/core/photonsol"
-	"pnl-solana-tool/core/solscan"
-	"pnl-solana-tool/package/utils"
-	"pnl-solana-tool/platform/database/mongodb"
+	gmgnai "pnl-scan-tool/core/gmgn.ai"
+	"pnl-scan-tool/package/utils"
+	"pnl-scan-tool/platform/database/mongodb"
+	gmaimodel "pnl-scan-tool/src/model/gmai.model"
+	solmodel "pnl-scan-tool/src/model/sol.model"
 	"strconv"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"golang.org/x/exp/rand"
 )
 
-type PNL struct {
-	WalletAddress string         `json:"wallet-address" bson:"walletaddress"`
-	TradeHistory  []TradeHistory `json:"trades" bson:"trades"`
-	XPNLs         []XPNL         `json:"xpnl" bson:"xpnl"`
-	LostXPNLs     []LostXPNL     `json:"lost-xpnl" bson:"lostxpnl"`
-	SummaryReview SummaryReview  `json:"summary-review" bson:"summaryreview"`
-}
-
-type TradeHistory struct {
-	TokenAddress string       `json:"token-address" bson:"tokenaddress"`
-	TokenSymbol  string       `json:"token-symbol" bson:"tokensymbol"`
-	EventTrades  []EventTrade `json:"event-trades" bson:"eventtrades"`
-	StartTime    string       `json:"start-time" bson:"starttime"`
-	EndTime      string       `json:"end-time" bson:"endtime"`
-}
-
-type XPNL struct {
-	TokenAddress         string  `json:"token-address" bson:"tokenaddress"`
-	TokenSymbol          string  `json:"token-symbol" bson:"tokensymbol"`
-	CountBuy             int     `json:"count-buy" bson:"countbuy"`
-	CountSell            int     `json:"count-sell" bson:"countsell"`
-	CountSellActual      int     `json:"count-sell-actual" bson:"countsellactual"`
-	TotalTokenBuy        float64 `json:"total-token-buy" bson:"totaltokenbuy"`
-	TotalTokenSell       float64 `json:"total-token-sell" bson:"totaltokensell"`
-	TotalTokenSellActual float64 `json:"total-token-sell-actual" bson:"totaltokensellactual"`
-	TotalSolBuy          float64 `json:"total-sol-buy" bson:"totalsolbuy"`
-	TotalSolSell         float64 `json:"total-sol-sell" bson:"totalsolsell"`
-	TotalSolSellActual   float64 `json:"total-sol-sell-actual" bson:"totalsolsellactual"`
-	TokenHoldAmount      float64 `json:"token-hold-amount" bson:"tokenholdamount"`
-	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount" bson:"tokenholdsolamount"`
-	ProfitSol            float64 `json:"profit-sol" bson:"profitsol"`
-	ProfitSolActual      float64 `json:"profit-sol-actual" bson:"profitsolactual"`
-	XPNL                 float64 `json:"xpnl" bson:"xpnl"`
-	XPNLRate             float64 `json:"xpnl-rate" bson:"xpnlrate"`
-	PriceSolFirstBuy     float64 `json:"price-sol-first-buy" bson:"pricesolfirstbuy"`
-	PriceSolBestSell     float64 `json:"price-sol-best-sell" bson:"pricesolbestsell"`
-	XPNLTrade            float64 `json:"xpnl-trade" bson:"xpnltrade"`
-	XPNLRateTrade        float64 `json:"xpnl-rate-trade" bson:"xpnlratetrade"`
-	StartTime            string  `json:"start-time" bson:"starttime"`
-	EndTime              string  `json:"end-time" bson:"endtime"`
-}
-
-type LostXPNL struct {
-	TokenAddress         string  `json:"token-address" bson:"tokenaddress"`
-	TokenSymbol          string  `json:"token-symbol" bson:"tokensymbol"`
-	CountBuy             int     `json:"count-buy" bson:"countbuy"`
-	CountSell            int     `json:"count-sell" bson:"countsell"`
-	CountSellActual      int     `json:"count-sell-actual" bson:"countsellactual"`
-	TotalTokenBuy        float64 `json:"total-token-buy" bson:"totaltokenbuy"`
-	TotalTokenSell       float64 `json:"total-token-sell" bson:"totaltokensell"`
-	TotalTokenSellActual float64 `json:"total-token-sell-actual" bson:"totaltokensellactual"`
-	TotalSolBuy          float64 `json:"total-sol-buy" bson:"totalsolbuy"`
-	TotalSolSell         float64 `json:"total-sol-sell" bson:"totalsolsell"`
-	TotalSolSellActual   float64 `json:"total-sol-sell-actual" bson:"totalsolsellactual"`
-	TokenHoldAmount      float64 `json:"token-hold-amount" bson:"tokenholdamount"`
-	TokenHoldSolAmount   float64 `json:"token-hold-sol-amount" bson:"tokenholdsolamount"`
-	ProfitSol            float64 `json:"profit-sol" bson:"profitsol"`
-	ProfitSolActual      float64 `json:"profit-sol-actual" bson:"profitsolactual"`
-	LostXPNL             float64 `json:"xpnl" bson:"lostxpnl"`
-	LostXPNLRate         float64 `json:"lost-xpnl-rate" bson:"lostxpnlrate"`
-	PriceSolFirstBuy     float64 `json:"price-sol-first-buy" bson:"pricesolfirstbuy"`
-	PriceSolBestSell     float64 `json:"price-sol-best-sell" bson:"pricesolbestsell"`
-	LostXPNLTrade        float64 `json:"xpnl-trade" bson:"xpnltrade"`
-	LostXPNLRateTrade    float64 `json:"lost-xpnl-rate-trade" bson:"lostxpnlratetrade"`
-	StartTime            string  `json:"start-time" bson:"starttime"`
-	EndTime              string  `json:"end-time" bson:"endtime"`
-}
-
-type SummaryReview struct {
-	TotalSolPNLAmount       float64 `json:"total-sol-pnl-amount" bson:"totalsolpnlamount"`
-	TotalSolPNLAmountActual float64 `json:"total-sol-pnl-amount-actual" bson:"totalsolpnlamountactual"`
-	TotalWin                int     `json:"total-win" bson:"totalwin"`
-	TotalLost               int     `json:"total-lost" bson:"totallost"`
-	WinRate                 float64 `json:"win-rate" bson:"winrate"`
-	BigXPNL                 int     `json:"big-xpnl" bson:"bigxpnl"`
-	RateBigXPNL             float64 `json:"rate-big-xpnl" bson:"ratebigxpnl"`
-}
-
-type EventTrade struct {
-	Type         string  `json:"type" bson:"type"`
-	EventType    string  `json:"event-type" bson:"eventtype"`
-	PriceSol     float64 `json:"price-sol" bson:"pricesol"`
-	SolAmount    float64 `json:"sol-amount" bson:"solamount"`
-	TokensAmount float64 `json:"tokens-amount" bson:"tokensamount"`
-	Timestamp    int64   `json:"timestamp" bson:"timestamp"`
-	DateTime     string  `json:"date-time" bson:"datetime"`
-}
-
-const epsilon = 1e-9
-
-// PNLScan scans the Solana blockchain and returns a PNL struct containing relevant data to be used in the PNL algorithm.
-func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
-
+func DeepPNLScanSol(chain string, walletAddress string, scanDay int) (*solmodel.PNL, error) {
 	var collection string
 
 	if scanDay == 0 {
-		collection = "all_time_pnl_wallet"
+		collection = "all_time_pnl_wallet_sol"
 	} else {
-		collection = "30_day_pnl_wallet"
+		collection = "30_day_pnl_wallet_sol"
 	}
 
-	var pnlHistory PNL
+	var pnlHistory solmodel.PNL
 
-	pnlHistory.WalletAddress = WalletAddress
+	pnlHistory.WalletAddress = walletAddress
 
-	filter := bson.M{"walletaddress": WalletAddress}
+	filter := bson.M{"walletaddress": walletAddress}
 
 	_, err := mongodb.FindOne(collection, filter)
 
@@ -130,21 +37,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		return nil, err
 	}
 
-	solscan := solscan.Solscan{
-		Address:      WalletAddress,
-		ExcludeToken: "So11111111111111111111111111111111111111111",
-		Flow:         "in",
-	}
-
-	transactions, err := solscan.GetTransactions(scanDay)
-
-	if err != nil {
-		fmt.Println("Error: " + err.Error())
-
-		//files.DeleteFile("wallet.csv")
-
-		return nil, err
-	}
+	transactions := gmgnai.ActivityAllTrade(chain, walletAddress, scanDay)
 
 	totalToken := len(transactions)
 
@@ -156,7 +49,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 	fmt.Println("")
 
 	for _, transaction := range transactions {
-		var tradeHistory TradeHistory
+		var tradeHistory solmodel.TradeHistory
 
 		count++
 
@@ -164,43 +57,40 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 
 		if transaction.TokenAddress == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" ||
 			transaction.TokenAddress == "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" ||
-			transaction.TokenAddress == "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" {
+			transaction.TokenAddress == "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" ||
+			transaction.TokenAddress == "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" ||
+			transaction.TokenAddress == "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4" ||
+			transaction.TokenAddress == "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" ||
+			transaction.TokenAddress == "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux" ||
+			transaction.TokenAddress == "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" ||
+			transaction.TokenAddress == "So11111111111111111111111111111111111111111" ||
+			transaction.TokenAddress == "So11111111111111111111111111111111111111112" {
 			fmt.Println("========================================================================================")
-			time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+			//time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
 			continue
 		}
 
-		token := photonsol.Token{
-			TokenAddress: transaction.TokenAddress,
-		}
+		// token := photonsol.Token{
+		// 	TokenAddress: transaction.TokenAddress,
+		// }
 
-		data, err := token.TokenInfomation()
+		// data, err := token.TokenInfomation()
 
-		if err != nil {
-			fmt.Println("Error: " + err.Error())
-			fmt.Println("========================================================================================")
-			time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
-			continue
-		}
+		// if err != nil {
+		// 	fmt.Println("Error: " + err.Error())
+		// 	fmt.Println("========================================================================================")
+		// 	time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+		// 	continue
+		// }
 
 		tradeHistory.TokenAddress = transaction.TokenAddress
-		tradeHistory.TokenSymbol = data.TokenSymbol
+		tradeHistory.TokenSymbol = transaction.Token.Symbol //data.TokenSymbol
 
-		fmt.Println("Token Symbol: " + data.TokenSymbol)
+		fmt.Println("Token Symbol: " + transaction.Token.Symbol)
 
 		fmt.Println("----------------------")
 
-		wallet := photonsol.Wallet{
-			WalletAddress: WalletAddress,
-		}
-
-		tradeTransactions, err := wallet.Transactions(data.PoolId)
-
-		if err != nil {
-			fmt.Println("Error: " + err.Error())
-			time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
-			continue
-		}
+		tradeTransactions := gmgnai.ActivityAllTradeToken(chain, walletAddress, transaction.TokenAddress)
 
 		var countBuy int = 0
 		var countSell int = 0
@@ -219,30 +109,33 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 		var priceSolFirstBuy float64 = 0
 		var priceSolBestSell float64 = 0
 
+		var lastTracsaction gmaimodel.Activity
+
 		for i := len(tradeTransactions) - 1; i >= 0; i-- {
 			tradeTransaction := tradeTransactions[i]
 
-			var eventTrade EventTrade
+			var eventTrade solmodel.EventTrade
 
-			eventTrade.Type = tradeTransaction.Attributes.Type
-			eventTrade.EventType = tradeTransaction.Attributes.EventType
-			eventTrade.PriceSol = utils.ConvertStringToFloat64(tradeTransaction.Attributes.PriceQuote)
-			eventTrade.SolAmount = utils.ConvertStringToFloat64(tradeTransaction.Attributes.QuoteAmount)
-			eventTrade.TokensAmount = utils.ConvertStringToFloat64(tradeTransaction.Attributes.TokensAmount)
-			eventTrade.Timestamp = tradeTransaction.Attributes.Timestamp
-			eventTrade.DateTime = utils.ConvertTimestampToDate(tradeTransaction.Attributes.Timestamp)
+			if tradeTransaction.QuoteAddress != "So11111111111111111111111111111111111111112" &&
+				tradeTransaction.QuoteAddress != "So11111111111111111111111111111111111111111" {
+				continue
+			}
+
+			lastTracsaction = tradeTransaction
+
+			eventTrade.EventType = tradeTransaction.EventType
+			eventTrade.PriceSol = tradeTransaction.Price
+			eventTrade.SolAmount = utils.ConvertStringToFloat64(tradeTransaction.QuoteAmount)
+			eventTrade.TokensAmount = utils.ConvertStringToFloat64(tradeTransaction.TokenAmount)
+			eventTrade.Timestamp = tradeTransaction.Timestamp
+			eventTrade.DateTime = utils.ConvertTimestampToDate(tradeTransaction.Timestamp)
 
 			tradeHistory.EventTrades = append(tradeHistory.EventTrades, eventTrade)
 
 			fmt.Printf("%#v\n", eventTrade)
 			fmt.Println("----------------------")
 
-			if eventTrade.EventType == "create_pool" {
-				time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
-				continue
-			}
-
-			if eventTrade.Type == "buy" {
+			if eventTrade.EventType == "buy" {
 				if priceSolFirstBuy == 0 {
 					priceSolFirstBuy = eventTrade.PriceSol
 				}
@@ -254,7 +147,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				totalSolBuy += eventTrade.SolAmount
 
 				countBuy++
-			} else if eventTrade.Type == "sell" {
+			} else if eventTrade.EventType == "sell" {
 				if eventTrade.PriceSol > priceSolBestSell {
 					priceSolBestSell = eventTrade.PriceSol
 				}
@@ -287,14 +180,14 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 
 		if len(tradeHistory.EventTrades) == 0 {
 			fmt.Println("========================================================================================")
-			time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+			// time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
 			continue
 		}
 
 		tradeHistory.StartTime = tradeHistory.EventTrades[0].DateTime
 		tradeHistory.EndTime = tradeHistory.EventTrades[len(tradeHistory.EventTrades)-1].DateTime
 
-		tokenHoldSolAmount = data.PriceQuote * tokenHoldAmount
+		tokenHoldSolAmount = (lastTracsaction.Price * lastTracsaction.Token.Price) / lastTracsaction.PriceUSD * tokenHoldAmount // data.PriceQuote * tokenHoldAmount
 
 		var profitSol float64 = totalSolSell - totalSolBuy + tokenHoldSolAmount
 		var profitSolActual float64 = totalSolSellActual - totalSolBuy + tokenHoldSolAmount
@@ -340,7 +233,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				xPNLTrade = priceSolBestSell / priceSolFirstBuy
 				xPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
 			}
-			pnlHistory.XPNLs = append(pnlHistory.XPNLs, XPNL{
+			pnlHistory.XPNLs = append(pnlHistory.XPNLs, solmodel.XPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
@@ -375,7 +268,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				xPNLTrade = priceSolBestSell / priceSolFirstBuy
 				xPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
 			}
-			pnlHistory.XPNLs = append(pnlHistory.XPNLs, XPNL{
+			pnlHistory.XPNLs = append(pnlHistory.XPNLs, solmodel.XPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
@@ -410,7 +303,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 				lostXPNLTrade = priceSolBestSell / priceSolFirstBuy
 				lostXPNLRateTrade = ((priceSolBestSell - priceSolFirstBuy) / priceSolFirstBuy) * 100
 			}
-			pnlHistory.LostXPNLs = append(pnlHistory.LostXPNLs, LostXPNL{
+			pnlHistory.LostXPNLs = append(pnlHistory.LostXPNLs, solmodel.LostXPNL{
 				TokenAddress:         tradeHistory.TokenAddress,
 				TokenSymbol:          tradeHistory.TokenSymbol,
 				CountBuy:             countBuy,
@@ -449,7 +342,7 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 
 		fmt.Println("")
 
-		time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
+		// time.Sleep(time.Duration(generateRandomInt(1000, 2000)) * time.Millisecond)
 	}
 
 	fmt.Println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
@@ -517,9 +410,5 @@ func PNLScan(WalletAddress string, scanDay int) (*PNL, error) {
 	//files.DeleteFile("wallet.csv")
 
 	return &pnlHistory, nil
-}
 
-func generateRandomInt(min int, max int) int {
-	rand.Seed(uint64(time.Now().UnixNano()))
-	return min + rand.Intn(max-min+1)
 }

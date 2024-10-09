@@ -12,10 +12,18 @@ type TopTradersData struct {
 	Data []WalletData `json:"data"`
 }
 
-const baseUrlTrader = "https://gmgn.ai/defi/quotation/v1/tokens/top_traders/sol/"
+const baseUrlTrader = "https://gmgn.ai/defi/quotation/v1/tokens/top_traders"
 
-func getTopTradersToken(token string) (*TopHoldersData, error) {
-	url := fmt.Sprintf("%s%s?limit=%d&tag=All&orderby=amount_percentage&direction=desc", baseUrlTrader, token, limit)
+func getTopTradersToken(chain string, token string) (*TopHoldersData, error) {
+	var url string
+	if chain == "sol" {
+		url = fmt.Sprintf("%s/%s/%s?limit=%d&tag=All&orderby=realized_profit&direction=desc", baseUrlTrader, chain, token, limit)
+	} else if chain == "eth" {
+		url = fmt.Sprintf("%s/%s/%s?orderby=realized_profit&direction=desc", baseUrlTrader, chain, token)
+	}
+
+	fmt.Println(url)
+
 	// if cursor != "" {
 	// 	url += "&cursor=" + cursor
 	// }
@@ -37,12 +45,12 @@ func getTopTradersToken(token string) (*TopHoldersData, error) {
 	return &apiResponse, nil
 }
 
-func TopTradersToken(token string) []WalletData {
+func TopTradersToken(chain string, token string) []WalletData {
 	var TopTraders []WalletData
 
 	count := 0
 
-	apiResponse, err := getTopTradersToken(token)
+	apiResponse, err := getTopTradersToken(chain, token)
 
 	if err != nil {
 		log.Fatalf("Error fetching data: %v", err)
@@ -50,7 +58,7 @@ func TopTradersToken(token string) []WalletData {
 
 	count += len(apiResponse.Data)
 
-	fmt.Println("Scan Total Holder: ", count)
+	fmt.Println("Scan Total Traders: ", count)
 
 	// Append activities to the slice
 	TopTraders = append(TopTraders, apiResponse.Data...)

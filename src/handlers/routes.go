@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"pnl-solana-tool/package/configs"
-	"pnl-solana-tool/src/services"
+	"pnl-scan-tool/package/configs"
+	"pnl-scan-tool/src/services"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"

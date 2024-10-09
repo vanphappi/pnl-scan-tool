@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"pnl-solana-tool/package/utils"
+	"pnl-scan-tool/package/utils"
 	"time"
 
 	"golang.org/x/exp/rand"

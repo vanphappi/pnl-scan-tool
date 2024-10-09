@@ -1,4 +1,4 @@
-package photonsol
+package photon
 
 import (
 	"encoding/json"

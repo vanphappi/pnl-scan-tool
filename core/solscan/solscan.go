@@ -7,9 +7,9 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"pnl-solana-tool/package/files"
-	"pnl-solana-tool/package/utils"
-	"pnl-solana-tool/platform/database/mongodb"
+	"pnl-scan-tool/package/files"
+	"pnl-scan-tool/package/utils"
+	"pnl-scan-tool/platform/database/mongodb"
 	"strings"
 	"time"
 

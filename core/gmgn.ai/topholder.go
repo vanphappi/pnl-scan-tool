@@ -57,10 +57,10 @@ type TopHoldersData struct {
 	Data []WalletData `json:"data"`
 }
 
-const baseUrlTopHolder = "https://gmgn.ai/defi/quotation/v1/tokens/top_holders/sol/"
+const baseUrlTopHolder = "https://gmgn.ai/defi/quotation/v1/tokens/top_holders/"
 
-func getTopHoldersToken(token string) (*TopHoldersData, error) {
-	url := fmt.Sprintf("%s%s?limit=%d&tag=All&orderby=amount_percentage&direction=desc", baseUrlTopHolder, token, limit)
+func getTopHoldersToken(chain string, token string) (*TopHoldersData, error) {
+	url := fmt.Sprintf("%s/%s/%s?limit=%d&tag=All&orderby=amount_percentage&direction=desc", baseUrlTopHolder, chain, token, limit)
 	// if cursor != "" {
 	// 	url += "&cursor=" + cursor
 	// }
@@ -82,12 +82,12 @@ func getTopHoldersToken(token string) (*TopHoldersData, error) {
 	return &apiResponse, nil
 }
 
-func TopHoldersToken(token string) []WalletData {
+func TopHoldersToken(chain string, token string) []WalletData {
 	var TopTraders []WalletData
 
 	count := 0
 
-	apiResponse, err := getTopHoldersToken(token)
+	apiResponse, err := getTopHoldersToken(chain, token)
 
 	if err != nil {
 		log.Fatalf("Error fetching data: %v", err)
