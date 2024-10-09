@@ -91,14 +91,14 @@ type TokenInfo struct {
 			IsSellable bool `json:"isSellable"`
 		} `json:"swapSimulation"`
 		Balances struct {
-			BurnBalance     int `json:"burnBalance"`
-			LockBalance     int `json:"lockBalance"`
-			DeployerBalance int `json:"deployerBalance"`
-			OwnerBalance    int `json:"ownerBalance"`
+			BurnBalance     float64 `json:"burnBalance"`
+			LockBalance     int     `json:"lockBalance"`
+			DeployerBalance float64 `json:"deployerBalance"`
+			OwnerBalance    int     `json:"ownerBalance"`
 			TopHolders      []struct {
-				Address    string `json:"address"`
-				Balance    int    `json:"balance"`
-				IsContract bool   `json:"isContract"`
+				Address    string  `json:"address"`
+				Balance    float64 `json:"balance"`
+				IsContract bool    `json:"isContract"`
 			} `json:"topHolders"`
 		} `json:"balances"`
 		Pools []interface{} `json:"pools"`

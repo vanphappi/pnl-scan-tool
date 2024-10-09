@@ -35,7 +35,7 @@ func getWalletActivities(chain string, wallet string, cursor string) (*gmaimodel
 func ActivityAllTrade(chain string, wallet string, scanDay int) []gmaimodel.Activity {
 	var allActivities []gmaimodel.Activity
 	cursor := ""
-	count := 0
+	// count := 0
 	for {
 		apiResponse, err := getWalletActivities(chain, wallet, cursor)
 
@@ -43,14 +43,16 @@ func ActivityAllTrade(chain string, wallet string, scanDay int) []gmaimodel.Acti
 			log.Fatalf("Error fetching data: %v", err)
 		}
 
-		count += len(apiResponse.Data.Activities)
+		// count += len(apiResponse.Data.Activities)
 
-		fmt.Println("Scan Token Trade: ", count)
+		// fmt.Println("Scan Token Trade: ", count)
 
 		// Append activities to the slice
 		allActivities = append(allActivities, apiResponse.Data.Activities...)
 
 		allActivities = RemoveDuplicates(allActivities)
+
+		fmt.Println("Scan Token Trade: ", len(allActivities))
 
 		if len(allActivities) > scanDay && scanDay != 0 {
 			allActivities = allActivities[:scanDay]
